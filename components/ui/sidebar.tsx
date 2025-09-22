@@ -107,13 +107,13 @@ function SidebarProvider({
       }
     }
 
-    window.addEventListener('keydown', handleKeyDown)
+    // Usando uma referência estável para o event listener
+    const stableHandleKeyDown = handleKeyDown;
+    window.addEventListener('keydown', stableHandleKeyDown)
+    
+    // Cleanup function que garante a remoção do mesmo listener que foi adicionado
     return () => {
-      try {
-        window.removeEventListener('keydown', handleKeyDown)
-      } catch (error) {
-        console.warn('Failed to remove event listener:', error)
-      }
+      window.removeEventListener('keydown', stableHandleKeyDown)
     }
   }, [toggleSidebar])
 
