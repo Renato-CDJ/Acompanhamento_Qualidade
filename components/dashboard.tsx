@@ -1,8 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { QuadroTab } from "@/components/quadro-tab"
 import { TreinamentoTab } from "@/components/treinamento-tab"
@@ -17,6 +16,13 @@ interface DashboardProps {
 
 export function Dashboard({ user, onLogout }: DashboardProps) {
   const [activeTab, setActiveTab] = useState("quadro")
+  const [key, setKey] = useState(0) // Chave para forçar remontagem
+
+  // Função para mudar a aba e forçar remontagem
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    setKey(prevKey => prevKey + 1);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -47,55 +53,63 @@ export function Dashboard({ user, onLogout }: DashboardProps) {
       </header>
 
       <div className="p-6">
-        <Tabs 
-          value={activeTab} 
-          onValueChange={setActiveTab} 
-          className="space-y-6"
-          key="dashboard-tabs" // Adicionando uma key estável
-        >
-          <TabsList className="grid w-full grid-cols-4 lg:w-fit lg:grid-cols-4">
-            <TabsTrigger value="quadro" className="flex items-center gap-2">
+        <div className="space-y-6">
+          {/* Navegação personalizada */}
+          <div className="bg-muted inline-flex h-9 w-fit items-center justify-center rounded-lg p-[3px] grid w-full grid-cols-4 lg:w-fit lg:grid-cols-4">
+            <button 
+              onClick={() => handleTabChange("quadro")}
+              className={`inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border px-2 py-1 text-sm font-medium whitespace-nowrap transition-all ${
+                activeTab === "quadro" 
+                  ? "bg-background border-input shadow-sm" 
+                  : "border-transparent"
+              }`}
+            >
               <BarChart3 className="w-4 h-4" />
               Quadro
-            </TabsTrigger>
-            <TabsTrigger value="treinamento" className="flex items-center gap-2">
+            </button>
+            <button 
+              onClick={() => handleTabChange("treinamento")}
+              className={`inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border px-2 py-1 text-sm font-medium whitespace-nowrap transition-all ${
+                activeTab === "treinamento" 
+                  ? "bg-background border-input shadow-sm" 
+                  : "border-transparent"
+              }`}
+            >
               <GraduationCap className="w-4 h-4" />
               Treinamento
-            </TabsTrigger>
-            <TabsTrigger value="treinados" className="flex items-center gap-2">
+            </button>
+            <button 
+              onClick={() => handleTabChange("treinados")}
+              className={`inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border px-2 py-1 text-sm font-medium whitespace-nowrap transition-all ${
+                activeTab === "treinados" 
+                  ? "bg-background border-input shadow-sm" 
+                  : "border-transparent"
+              }`}
+            >
               <Users className="w-4 h-4" />
               Treinados
-            </TabsTrigger>
-            <TabsTrigger value="desligamentos" className="flex items-center gap-2">
+            </button>
+            <button 
+              onClick={() => handleTabChange("desligamentos")}
+              className={`inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border px-2 py-1 text-sm font-medium whitespace-nowrap transition-all ${
+                activeTab === "desligamentos" 
+                  ? "bg-background border-input shadow-sm" 
+                  : "border-transparent"
+              }`}
+            >
               <UserMinus className="w-4 h-4" />
               Desligamentos
-            </TabsTrigger>
-          </TabsList>
+            </button>
+          </div>
 
-          {activeTab === "quadro" && (
-            <TabsContent value="quadro" className="animate-fade-in">
-              <QuadroTab userRole={user.role} />
-            </TabsContent>
-          )}
-
-          {activeTab === "treinamento" && (
-            <TabsContent value="treinamento" className="animate-fade-in">
-              <TreinamentoTab userRole={user.role} />
-            </TabsContent>
-          )}
-
-          {activeTab === "treinados" && (
-            <TabsContent value="treinados" className="animate-fade-in">
-              <TreinadosTab userRole={user.role} />
-            </TabsContent>
-          )}
-
-          {activeTab === "desligamentos" && (
-            <TabsContent value="desligamentos" className="animate-fade-in">
-              <DesligamentosTab userRole={user.role} />
-            </TabsContent>
-          )}
-        </Tabs>
+          {/* Conteúdo com chave para forçar remontagem */}
+          <div key={key} className="animate-fade-in">
+            {activeTab === "quadro" && <QuadroTab userRole={user.role} />}
+            {activeTab === "treinamento" && <TreinamentoTab userRole={user.role} />}
+            {activeTab === "treinados" && <TreinadosTab userRole={user.role} />}
+            {activeTab === "desligamentos" && <DesligamentosTab userRole={user.role} />}
+          </div>
+        </div>
       </div>
     </div>
   )
