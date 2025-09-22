@@ -47,7 +47,12 @@ export function Dashboard({ user, onLogout }: DashboardProps) {
       </header>
 
       <div className="p-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs 
+          value={activeTab} 
+          onValueChange={setActiveTab} 
+          className="space-y-6"
+          key="dashboard-tabs" // Adicionando uma key estável
+        >
           <TabsList className="grid w-full grid-cols-4 lg:w-fit lg:grid-cols-4">
             <TabsTrigger value="quadro" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
@@ -67,21 +72,29 @@ export function Dashboard({ user, onLogout }: DashboardProps) {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="quadro" className="animate-fade-in">
-            <QuadroTab userRole={user.role} />
-          </TabsContent>
+          {activeTab === "quadro" && (
+            <TabsContent value="quadro" className="animate-fade-in">
+              <QuadroTab userRole={user.role} />
+            </TabsContent>
+          )}
 
-          <TabsContent value="treinamento" className="animate-fade-in">
-            <TreinamentoTab userRole={user.role} />
-          </TabsContent>
+          {activeTab === "treinamento" && (
+            <TabsContent value="treinamento" className="animate-fade-in">
+              <TreinamentoTab userRole={user.role} />
+            </TabsContent>
+          )}
 
-          <TabsContent value="treinados" className="animate-fade-in">
-            <TreinadosTab userRole={user.role} />
-          </TabsContent>
+          {activeTab === "treinados" && (
+            <TabsContent value="treinados" className="animate-fade-in">
+              <TreinadosTab userRole={user.role} />
+            </TabsContent>
+          )}
 
-          <TabsContent value="desligamentos" className="animate-fade-in">
-            <DesligamentosTab userRole={user.role} />
-          </TabsContent>
+          {activeTab === "desligamentos" && (
+            <TabsContent value="desligamentos" className="animate-fade-in">
+              <DesligamentosTab userRole={user.role} />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </div>
