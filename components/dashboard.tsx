@@ -102,12 +102,12 @@ export function Dashboard({ user, onLogout }: DashboardProps) {
             </button>
           </div>
 
-          {/* Conteúdo com chave para forçar remontagem */}
+          {/* Conteúdo com renderização condicional completa para evitar problemas de desmontagem */}
           <div key={key} className="animate-fade-in">
-            {activeTab === "quadro" && <QuadroTab userRole={user.role} />}
-            {activeTab === "treinamento" && <TreinamentoTab userRole={user.role} />}
-            {activeTab === "treinados" && <TreinadosTab userRole={user.role} />}
-            {activeTab === "desligamentos" && <DesligamentosTab userRole={user.role} />}
+            {activeTab === "quadro" ? <QuadroTab key="quadro-tab" userRole={user.role} /> : null}
+            {activeTab === "treinamento" ? <TreinamentoTab key="treinamento-tab" userRole={user.role} /> : null}
+            {activeTab === "treinados" ? <TreinadosTab key="treinados-tab" userRole={user.role} /> : null}
+            {activeTab === "desligamentos" ? <DesligamentosTab key="desligamentos-tab" userRole={user.role} /> : null}
           </div>
         </div>
       </div>
