@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Acompanhamento</title>
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- SheetJS for Excel import -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Firebase + Scripts -->
+    <script type="module" src="script.js"></script>
+    <script type="module" src="solicitacoes.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1><i class="fas fa-chart-line"></i> Sistema de Acompanhamento</h1>
+                </div>
+                <div class="header-right">
+                    <div class="global-filter">
+                        <label for="globalMonthFilter">Filtro Global:</label>
+                        <select id="globalMonthFilter">
+                            <option value="">Todos os Meses</option>
+                            <option value="01">Janeiro</option>
+                            <option value="02">Fevereiro</option>
+                            <option value="03">Março</option>
+                            <option value="04">Abril</option>
+                            <option value="05">Maio</option>
+                            <option value="06">Junho</option>
+                            <option value="07">Julho</option>
+                            <option value="08">Agosto</option>
+                            <option value="09">Setembro</option>
+                            <option value="10">Outubro</option>
+                            <option value="11">Novembro</option>
+                            <option value="12">Dezembro</option>
+                        </select>
+                    </div>
+                    <button id="themeToggle" class="theme-toggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav-tabs">
+            <a href="quadro.html" class="tab-btn">
+                <i class="fas fa-users"></i> Quadro
+            </a>
+            <button class="tab-btn active" data-tab="treinamento">
+                <i class="fas fa-chalkboard-teacher"></i>
+                Treinamento
+            </button>
+            <button class="tab-btn" data-tab="solicitacoes">
+                <i class="fas fa-tasks"></i>
+                Solicitações
+            </button>
+            <button class="tab-btn" data-tab="treinados">
+                <i class="fas fa-user-check"></i>
+                Treinados
+            </button>
+            <button class="tab-btn" data-tab="desligamentos">
+                <i class="fas fa-user-times"></i>
+                Desligamentos
+            </button>
+        </nav>
+
+        <!-- Aba Treinamento -->
+        <div id="treinamento" class="tab-content active">
+            <div class="content-header">
+                <h2><i class="fas fa-chalkboard-teacher"></i> Estatísticas de Treinamentos</h2>
+                <div class="action-buttons">
+                    <button id="refreshBtn" class="btn btn-success">
+                        <i class="fas fa-sync-alt"></i>
+                        Atualizar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Simplified to show only statistics like quadro.html -->
+            <section class="stats-grid" id="treinamentoStats">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-info">
+                        <h4 id="totalTrainings">0</h4>
+                        <p>Total de Treinamentos</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-info">
+                        <h4 id="appliedTrainings">0</h4>
+                        <p>Aplicados</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                    <div class="stat-info">
+                        <h4 id="pendingTrainings">0</h4>
+                        <p>Pendentes</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
+                    <div class="stat-info">
+                        <h4 id="notAppliedTrainings">0</h4>
+                        <p>Não Aplicados</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Added carteira stats section -->
+            <section class="section">
+                <div class="section-header">
+                    <h3>Estatísticas por Carteira</h3>
+                </div>
+                <div id="treinamentoCarteiraStats" class="carteira-stats">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Added charts section like quadro.html -->
+            <section class="section">
+                <div class="section-header">
+                    <h3>Análises</h3>
+                </div>
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <h4>Status dos Treinamentos</h4>
+                        <canvas id="treinamentoStatusChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h4>Distribuição por Carteira</h4>
+                        <canvas id="treinamentoCarteiraChart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Aba Solicitações -->
+        <div id="solicitacoes" class="tab-content hidden">
+            <div class="content-header">
+                <h2><i class="fas fa-tasks"></i> Estatísticas de Solicitações</h2>
+                <div class="action-buttons">
+                    <button id="refreshSolicitacoesBtn" class="btn btn-success">
+                        <i class="fas fa-sync-alt"></i> Atualizar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Simplified to show only statistics -->
+            <section class="stats-grid" id="solicitacoesStats">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-list"></i></div>
+                    <div class="stat-info">
+                        <h4 id="totalSolicitacoes">0</h4>
+                        <p>Total de Solicitações</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+                    <div class="stat-info">
+                        <h4 id="pendentesSolicitacoes">0</h4>
+                        <p>Pendentes</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-info">
+                        <h4 id="concluidasSolicitacoes">0</h4>
+                        <p>Aplicadas</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Added carteira stats section -->
+            <section class="section">
+                <div class="section-header">
+                    <h3>Estatísticas por Carteira</h3>
+                </div>
+                <div id="solicitacoesCarteiraStats" class="carteira-stats">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Added charts section -->
+            <section class="section">
+                <div class="section-header">
+                    <h3>Análises</h3>
+                </div>
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <h4>Status das Solicitações</h4>
+                        <canvas id="solicitacoesStatusChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h4>Distribuição por Carteira</h4>
+                        <canvas id="solicitacoesCarteiraChart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Aba Treinados -->
+        <div id="treinados" class="tab-content hidden">
+            <div class="content-header">
+                <h2><i class="fas fa-user-check"></i> Estatísticas de Treinados</h2>
+                <div class="action-buttons">
+                    <button id="refreshTrainedBtn" class="btn btn-success">
+                        <i class="fas fa-sync-alt"></i>
+                        Atualizar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Simplified to show only statistics -->
+            <section class="stats-grid" id="treinadosStats">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-info">
+                        <h4 id="totalTrained">0</h4>
+                        <p>Total de Treinados</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+                    <div class="stat-info">
+                        <h4 id="activeTrained">0</h4>
+                        <p>Ativos</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                    <div class="stat-info">
+                        <h4 id="experiencedTrained">0</h4>
+                        <p>Experientes</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-star"></i></div>
+                    <div class="stat-info">
+                        <h4 id="multipleCampaignsTrained">0</h4>
+                        <p>Múltiplas Campanhas</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Added carteira stats section -->
+            <section class="section">
+                <div class="section-header">
+                    <h3>Estatísticas por Carteira</h3>
+                </div>
+                <div id="treinadosCarteiraStats" class="carteira-stats">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Added charts section -->
+            <section class="section">
+                <div class="section-header">
+                    <h3>Análises</h3>
+                </div>
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <h4>Status dos Treinados</h4>
+                        <canvas id="treinadosStatusChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h4>Distribuição por Carteira</h4>
+                        <canvas id="treinadosCarteiraChart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Aba Desligamentos -->
+        <div id="desligamentos" class="tab-content hidden">
+            <div class="content-header">
+                <h2><i class="fas fa-user-times"></i> Estatísticas de Desligamentos</h2>
+                <div class="action-buttons">
+                    <button id="refreshDesligadosBtn" class="btn btn-success">
+                        <i class="fas fa-sync-alt"></i>
+                        Atualizar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Simplified to show only statistics -->
+            <section class="stats-grid" id="desligamentosStats">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-user-times"></i></div>
+                    <div class="stat-info">
+                        <h4 id="totalDesligados">0</h4>
+                        <p>Total de Desligados</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div class="stat-info">
+                        <h4 id="avisoDesligados">0</h4>
+                        <p>Com Aviso Prévio</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-calendar-times"></i></div>
+                    <div class="stat-info">
+                        <h4 id="semAvisoDesligados">0</h4>
+                        <p>Sem Aviso Prévio</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="stat-info">
+                        <h4 id="avgDaysDesligados">0</h4>
+                        <p>Média de Dias</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Added carteira stats section -->
+            <section class="section">
+                <div class="section-header">
+                    <h3>Estatísticas por Carteira</h3>
+                </div>
+                <div id="desligamentosCarteiraStats" class="carteira-stats">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Added charts section -->
+            <section class="section">
+                <div class="section-header">
+                    <h3>Análises</h3>
+                </div>
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <h4>Motivos de Desligamento</h4>
+                        <canvas id="desligamentosChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h4>Distribuição por Carteira</h4>
+                        <canvas id="desligamentosCarteiraChart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</body>
+</html>
