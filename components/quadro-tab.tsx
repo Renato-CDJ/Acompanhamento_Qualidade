@@ -18,6 +18,9 @@ interface QuadroTabProps {
 export function QuadroTab({ userRole }: QuadroTabProps) {
   const [selectedArea, setSelectedArea] = useState<"caixa" | "cobranca">("caixa")
   const [activeSubTab, setActiveSubTab] = useState("total")
+  const [showDailyForm, setShowDailyForm] = useState(false)
+  const [selectedTurno, setSelectedTurno] = useState<string>("geral")
+  const [registros, setRegistros] = useState<any[]>([])
 
   // Mock data - em produção viria do backend
   const quadroData = {
@@ -79,7 +82,7 @@ export function QuadroTab({ userRole }: QuadroTabProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header com seleção de área */}
+      {/* Header com seleção de área e turno */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold">Quadro de Funcionários</h2>
@@ -98,10 +101,24 @@ export function QuadroTab({ userRole }: QuadroTabProps) {
               <SelectItem value="cobranca">Cobrança</SelectItem>
             </SelectContent>
           </Select>
+          <Label htmlFor="turno-select" className="text-sm font-medium ml-4">
+            Turno:
+          </Label>
+          <Select value={selectedTurno} onValueChange={setSelectedTurno}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="geral">Geral</SelectItem>
+              <SelectItem value="manha">Manhã</SelectItem>
+              <SelectItem value="tarde">Tarde</SelectItem>
+              <SelectItem value="integral">Integral</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      {/* Cards de estatísticas */}
+      {/* Cards de estatísticas + botão de preenchimento diário */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {statsCards.map((stat) => {
           const Icon = stat.icon
@@ -117,11 +134,41 @@ export function QuadroTab({ userRole }: QuadroTabProps) {
                     <Icon className={`w-6 h-6 ${stat.color}`} />
                   </div>
                 </div>
+                {userRole === "admin" && (
+                  <Button
+                    size="sm"
+                    className="mt-4 w-full"
+                    variant="outline"
+                    onClick={() => setShowDailyForm(true)}
+                  >
+                    Preencher Diário
+                  </Button>
+                )}
               </CardContent>
             </Card>
           )
         })}
       </div>
+
+      {/* Formulário/tabela de preenchimento diário */}
+      {showDailyForm && (
+        <div className="my-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Preenchimento Diário do Quadro</CardTitle>
+              <CardDescription>Preencha os dados do dia para o quadro de pessoal</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <QuadroTable userRole={userRole} area={selectedArea} activeTab={activeSubTab} turno={selectedTurno} />
+              <div className="flex justify-end mt-4">
+                <Button variant="outline" size="sm" onClick={() => setShowDailyForm(false)}>
+                  Fechar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Tabs para detalhamento */}
       <Tabs value={activeSubTab} onValueChange={setActiveSubTab}>
@@ -144,7 +191,7 @@ export function QuadroTab({ userRole }: QuadroTabProps) {
               <CardDescription>Distribuição do quadro de funcionários</CardDescription>
             </CardHeader>
             <CardContent>
-              <QuadroChart data={currentData} area={selectedArea} />
+              <QuadroChart data={currentData} area={selectedArea} turno={selectedTurno} registros={registros} />
             </CardContent>
           </Card>
 
@@ -166,7 +213,15 @@ export function QuadroTab({ userRole }: QuadroTabProps) {
               <CardDescription>Atualizações diárias do quadro</CardDescription>
             </CardHeader>
             <CardContent>
-              <QuadroTable userRole={userRole} area={selectedArea} activeTab={activeSubTab} />
+              <QuadroTable
+                userRole={userRole}
+                area={selectedArea}
+                activeTab={activeSubTab}
+                turno={selectedTurno}
+                // Atualiza registros no estado local para o gráfico
+                // O QuadroTable precisa ser ajustado para aceitar onChange
+                onChangeRegistros={setRegistros}
+              />
             </CardContent>
           </Card>
         </div>

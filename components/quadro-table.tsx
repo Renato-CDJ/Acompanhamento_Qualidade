@@ -15,6 +15,8 @@ interface QuadroTableProps {
   userRole: "admin" | "user"
   area: string
   activeTab: string
+  turno?: string
+  onChangeRegistros?: (registros: RegistroQuadro[]) => void
 }
 
 interface RegistroQuadro {
@@ -22,38 +24,26 @@ interface RegistroQuadro {
   data: string
   tipo: "total" | "ativos" | "ferias" | "afastamento" | "inss"
   quantidade: number
+  turno?: string
+  carteira?: string
+  capacity?: number
+  presentes?: number
+  faltas?: number
   observacao?: string
 }
 
-export function QuadroTable({ userRole, area, activeTab }: QuadroTableProps) {
-  const [registros, setRegistros] = useState<RegistroQuadro[]>([
-    {
-      id: "1",
-      data: "2024-01-15",
-      tipo: "ativos",
-      quantidade: 120,
-      observacao: "Início do mês",
-    },
-    {
-      id: "2",
-      data: "2024-01-14",
-      tipo: "ferias",
-      quantidade: 15,
-      observacao: "Período de férias coletivas",
-    },
-    {
-      id: "3",
-      data: "2024-01-13",
-      tipo: "afastamento",
-      quantidade: 10,
-      observacao: "Afastamentos médicos",
-    },
-  ])
+export function QuadroTable({ userRole, area, activeTab, turno, onChangeRegistros }: QuadroTableProps) {
+  const [registros, setRegistros] = useState<RegistroQuadro[]>([])
 
   const [novoRegistro, setNovoRegistro] = useState({
     data: new Date().toISOString().split("T")[0],
     tipo: activeTab as "total" | "ativos" | "ferias" | "afastamento" | "inss",
     quantidade: "",
+    turno: turno || "geral",
+    carteira: "",
+    capacity: "",
+    presentes: "",
+    faltas: "",
     observacao: "",
   })
 
@@ -68,14 +58,29 @@ export function QuadroTable({ userRole, area, activeTab }: QuadroTableProps) {
       data: novoRegistro.data,
       tipo: novoRegistro.tipo,
       quantidade: Number.parseInt(novoRegistro.quantidade),
+      turno: turno || "geral",
+      carteira: area === "Cobrança" ? novoRegistro.carteira : undefined,
       observacao: novoRegistro.observacao,
+      ...(area === "Cobrança" && {
+        capacity: novoRegistro.capacity ? Number.parseInt(novoRegistro.capacity) : undefined,
+        presentes: novoRegistro.presentes ? Number.parseInt(novoRegistro.presentes) : undefined,
+        faltas: novoRegistro.faltas ? Number.parseInt(novoRegistro.faltas) : undefined,
+      })
     }
 
     setRegistros([registro, ...registros])
+    if (typeof onChangeRegistros === "function") {
+      onChangeRegistros([registro, ...registros])
+    }
     setNovoRegistro({
       data: new Date().toISOString().split("T")[0],
       tipo: activeTab as "total" | "ativos" | "ferias" | "afastamento" | "inss",
       quantidade: "",
+      turno: turno || "geral",
+      carteira: "",
+      capacity: "",
+      presentes: "",
+      faltas: "",
       observacao: "",
     })
     setShowForm(false)
@@ -96,7 +101,11 @@ export function QuadroTable({ userRole, area, activeTab }: QuadroTableProps) {
     return colors[tipo as keyof typeof colors] || colors.total
   }
 
-  const filteredRegistros = registros.filter((r) => activeTab === "total" || r.tipo === activeTab)
+  const filteredRegistros = registros.filter((r) => {
+    const tipoMatch = activeTab === "total" || r.tipo === activeTab
+    const turnoMatch = turno ? (r.turno === turno) : true
+    return tipoMatch && turnoMatch
+  })
 
   return (
     <div className="space-y-4">
@@ -112,7 +121,25 @@ export function QuadroTable({ userRole, area, activeTab }: QuadroTableProps) {
 
       {showForm && userRole === "admin" && (
         <form onSubmit={handleSubmit} className="space-y-4 p-4 border border-border rounded-lg bg-muted/30">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {area === "Cobrança" && (
+              <div className="space-y-2">
+                <Label htmlFor="carteira">Carteira</Label>
+                <Select
+                  value={novoRegistro.carteira}
+                  onValueChange={(value) => setNovoRegistro({ ...novoRegistro, carteira: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a carteira" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Carteira 1">Carteira 1</SelectItem>
+                    <SelectItem value="Carteira 2">Carteira 2</SelectItem>
+                    <SelectItem value="Carteira 3">Carteira 3</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="data">Data</Label>
               <Input
@@ -154,7 +181,41 @@ export function QuadroTable({ userRole, area, activeTab }: QuadroTableProps) {
                 required
               />
             </div>
-            <div className="space-y-2">
+            {area === "Cobrança" && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="capacity">Capacity</Label>
+                  <Input
+                    id="capacity"
+                    type="number"
+                    placeholder="Capacity"
+                    value={novoRegistro.capacity}
+                    onChange={(e) => setNovoRegistro({ ...novoRegistro, capacity: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="presentes">Presentes</Label>
+                  <Input
+                    id="presentes"
+                    type="number"
+                    placeholder="Presentes"
+                    value={novoRegistro.presentes}
+                    onChange={(e) => setNovoRegistro({ ...novoRegistro, presentes: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="faltas">Faltas</Label>
+                  <Input
+                    id="faltas"
+                    type="number"
+                    placeholder="Faltas"
+                    value={novoRegistro.faltas}
+                    onChange={(e) => setNovoRegistro({ ...novoRegistro, faltas: e.target.value })}
+                  />
+                </div>
+              </>
+            )}
+            <div className="space-y-2 col-span-3">
               <Label htmlFor="observacao">Observação</Label>
               <Input
                 id="observacao"
@@ -180,8 +241,12 @@ export function QuadroTable({ userRole, area, activeTab }: QuadroTableProps) {
           <TableHeader>
             <TableRow>
               <TableHead>Data</TableHead>
+              {area === "Cobrança" && <TableHead>Carteira</TableHead>}
               <TableHead>Tipo</TableHead>
               <TableHead>Quantidade</TableHead>
+              {area === "Cobrança" && <TableHead>Capacity</TableHead>}
+              {area === "Cobrança" && <TableHead>Presentes</TableHead>}
+              {area === "Cobrança" && <TableHead>Faltas</TableHead>}
               <TableHead>Observação</TableHead>
               {userRole === "admin" && <TableHead className="w-20">Ações</TableHead>}
             </TableRow>
@@ -189,7 +254,7 @@ export function QuadroTable({ userRole, area, activeTab }: QuadroTableProps) {
           <TableBody>
             {filteredRegistros.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={userRole === "admin" ? 5 : 4} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={userRole === "admin" ? 8 : 7} className="text-center text-muted-foreground py-8">
                   Nenhum registro encontrado
                 </TableCell>
               </TableRow>
@@ -200,12 +265,53 @@ export function QuadroTable({ userRole, area, activeTab }: QuadroTableProps) {
                     <Calendar className="w-4 h-4 text-muted-foreground" />
                     {new Date(registro.data).toLocaleDateString("pt-BR")}
                   </TableCell>
+                  {area === "Cobrança" && <TableCell className="font-medium">{registro.carteira ?? '-'}</TableCell>}
+      {/* Estatísticas por carteira - apenas Cobrança */}
+      {area === "Cobrança" && (
+        <div className="mt-8">
+          <h4 className="text-lg font-bold mb-2">Estatísticas por Carteira</h4>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Carteira</TableHead>
+                <TableHead>Capacity</TableHead>
+                <TableHead>Presentes</TableHead>
+                <TableHead>Faltas</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {(() => {
+                // Agrupa por carteira
+                const stats: Record<string, { capacity: number; presentes: number; faltas: number }> = {};
+                registros.forEach((r) => {
+                  if (!r.carteira) return;
+                  if (!stats[r.carteira]) stats[r.carteira] = { capacity: 0, presentes: 0, faltas: 0 };
+                  stats[r.carteira].capacity += r.capacity || 0;
+                  stats[r.carteira].presentes += r.presentes || 0;
+                  stats[r.carteira].faltas += r.faltas || 0;
+                });
+                return Object.entries(stats).map(([carteira, valores]) => (
+                  <TableRow key={carteira}>
+                    <TableCell className="font-medium">{carteira}</TableCell>
+                    <TableCell>{valores.capacity}</TableCell>
+                    <TableCell>{valores.presentes}</TableCell>
+                    <TableCell>{valores.faltas}</TableCell>
+                  </TableRow>
+                ));
+              })()}
+            </TableBody>
+          </Table>
+        </div>
+      )}
                   <TableCell>
                     <Badge variant="outline" className={getTipoBadge(registro.tipo)}>
                       {registro.tipo.charAt(0).toUpperCase() + registro.tipo.slice(1)}
                     </Badge>
                   </TableCell>
                   <TableCell className="font-medium">{registro.quantidade}</TableCell>
+                  {area === "Cobrança" && <TableCell className="font-medium">{registro.capacity ?? '-'}</TableCell>}
+                  {area === "Cobrança" && <TableCell className="font-medium">{registro.presentes ?? '-'}</TableCell>}
+                  {area === "Cobrança" && <TableCell className="font-medium">{registro.faltas ?? '-'}</TableCell>}
                   <TableCell className="text-muted-foreground">{registro.observacao || "-"}</TableCell>
                   {userRole === "admin" && (
                     <TableCell>
