@@ -21,7 +21,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import type { Turno, EstatisticaCaixa } from "@/lib/data"
-import { mockEstatisticasCaixa } from "@/lib/data"
+import { mockEstatisticasCaixa, adicionarEstatistica } from "@/lib/data"
 
 interface CaixaSectionProps {
   selectedTurno: Turno
@@ -85,6 +85,7 @@ export function CaixaSection({ selectedTurno }: CaixaSectionProps) {
     }
 
     setTiposEstatisticas([...tiposEstatisticas, novaEstatistica])
+    adicionarEstatistica(novoTipo)
   }
 
   const handleEditTipoEstatistica = (id: string, novoNome: string) => {
@@ -327,9 +328,10 @@ export function CaixaSection({ selectedTurno }: CaixaSectionProps) {
             <AddCaixaDialog
               open={showEditDialog}
               onOpenChange={setShowEditDialog}
-              onAdd={handleEditRecord}
+              onAdd={(data) => {
+                handleEditRecord({ ...data, id: editingRecord.id })
+              }}
               tiposEstatisticas={tiposEstatisticas}
-              editingRecord={editingRecord}
             />
           )}
         </DialogContent>
