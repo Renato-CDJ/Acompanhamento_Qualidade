@@ -117,23 +117,27 @@ export function CapacitacaoTab() {
         </div>
         <div className="flex gap-2">
           {user?.role === "admin" && (
-            <div className="mb-4">
-              <Button variant="outline" onClick={() => setShowAddAssuntoDialog(true)} className="mb-2">
-                <Plus className="h-4 w-4 mr-2" />
-                Gerenciar Assuntos
-              </Button>
-              <div className="bg-muted rounded-lg p-4 shadow-sm">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold text-base">Assuntos de Capacitação</span>
-                  <Button size="sm" variant="ghost" onClick={() => setShowAddAssuntoDialog(true)}>
-                    <Plus className="h-4 w-4 mr-1" /> Novo
+            <div className="mb-4 flex gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Gerenciar Assuntos
                   </Button>
-                </div>
-                <ul className="space-y-2">
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="min-w-[260px]">
+                  <DropdownMenuItem onClick={() => setShowAddAssuntoDialog(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Novo Assunto
+                  </DropdownMenuItem>
+                  <div className="border-t my-2" />
+                  {assuntos.length === 0 && (
+                    <div className="px-2 py-1 text-muted-foreground text-sm">Nenhum assunto cadastrado.</div>
+                  )}
                   {assuntos.map((assunto, index) => (
-                    <li key={assunto} className="flex items-center justify-between bg-background rounded px-3 py-2">
-                      <span className="text-sm max-w-40 truncate">{assunto}</span>
-                      <div className="flex gap-2">
+                    <div key={assunto} className="flex items-center justify-between px-2 py-1">
+                      <span className="text-sm max-w-[140px] truncate">{assunto}</span>
+                      <div className="flex gap-1">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -155,14 +159,11 @@ export function CapacitacaoTab() {
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
-                    </li>
+                    </div>
                   ))}
-                  {assuntos.length === 0 && (
-                    <li className="text-muted-foreground text-sm">Nenhum assunto cadastrado.</li>
-                  )}
-                </ul>
-              </div>
-              <Button onClick={() => setShowAddDialog(true)} className="mt-4">
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button onClick={() => setShowAddDialog(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Adicionar Treinamento
               </Button>

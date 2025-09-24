@@ -125,14 +125,18 @@ export function CobrancaSection({ selectedTurno }: CobrancaSectionProps) {
                     Gerenciar Carteiras
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent className="min-w-[260px]">
                   <DropdownMenuItem onClick={() => setShowAddCarteiraDialog(true)}>
                     <Plus className="h-4 w-4 mr-2" />
                     Nova Carteira
                   </DropdownMenuItem>
+                  <div className="border-t my-2" />
+                  {carteiras.length === 0 && (
+                    <div className="px-2 py-1 text-muted-foreground text-sm">Nenhuma carteira cadastrada.</div>
+                  )}
                   {carteiras.map((carteira, index) => (
                     <div key={carteira} className="flex items-center justify-between px-2 py-1">
-                      <span className="text-sm">{carteira}</span>
+                      <span className="text-sm max-w-[140px] truncate">{carteira}</span>
                       <div className="flex gap-1">
                         <Button
                           variant="ghost"
@@ -142,11 +146,17 @@ export function CobrancaSection({ selectedTurno }: CobrancaSectionProps) {
                             setEditingCarteiraIndex(index)
                             setShowEditCarteiraDialog(true)
                           }}
+                          title="Editar"
                         >
-                          <Edit className="h-3 w-3" />
+                          <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeleteCarteira(carteira)}>
-                          <Trash2 className="h-3 w-3" />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteCarteira(carteira)}
+                          title="Excluir"
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
                     </div>
