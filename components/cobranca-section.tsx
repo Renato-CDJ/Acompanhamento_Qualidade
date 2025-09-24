@@ -364,45 +364,46 @@ export function CobrancaSection({ selectedTurno }: CobrancaSectionProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Carteira Dialog */}
-      <Dialog open={showEditCarteiraDialog} onOpenChange={setShowEditCarteiraDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Editar Carteira</DialogTitle>
-            <DialogDescription>Edite ou exclua as informações da carteira selecionada</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <table className="w-full text-sm">
-              <tbody>
-                <tr>
-                  <td className="font-medium pr-2">Nome:</td>
-                  <td>
-                    <Input id="carteira" name="carteira" defaultValue={editingCarteira} required />
-                  </td>
-                </tr>
-                {/* Adicione outros campos se necessário */}
-              </tbody>
-            </table>
-            <div className="flex justify-end gap-2 mt-4">
-              <Button type="button" variant="outline" onClick={() => setShowEditCarteiraDialog(false)}>
-                Cancelar
-              </Button>
-              <Button type="button" variant="destructive" onClick={() => { handleDeleteCarteira(editingCarteira); setShowEditCarteiraDialog(false); }}>
-                Excluir
-              </Button>
-              <Button type="button" onClick={() => {
-                const input = document.getElementById('carteira') as HTMLInputElement;
-                if (input && input.value.trim()) {
-                  handleEditCarteira(input.value.trim());
-                  setShowEditCarteiraDialog(false);
-                }
-              }}>
-                Salvar
-              </Button>
+      {/* Edit Carteira Dialog - renderizado fora do DropdownMenu */}
+      {showEditCarteiraDialog && (
+        <Dialog open={showEditCarteiraDialog} onOpenChange={setShowEditCarteiraDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Editar Carteira</DialogTitle>
+              <DialogDescription>Edite ou exclua as informações da carteira selecionada</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <table className="w-full text-sm">
+                <tbody>
+                  <tr>
+                    <td className="font-medium pr-2">Nome:</td>
+                    <td>
+                      <Input id="carteira" name="carteira" defaultValue={editingCarteira} required />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div className="flex justify-end gap-2 mt-4">
+                <Button type="button" variant="outline" onClick={() => setShowEditCarteiraDialog(false)}>
+                  Cancelar
+                </Button>
+                <Button type="button" variant="destructive" onClick={() => { handleDeleteCarteira(editingCarteira); setShowEditCarteiraDialog(false); }}>
+                  Excluir
+                </Button>
+                <Button type="button" onClick={() => {
+                  const input = document.getElementById('carteira') as HTMLInputElement;
+                  if (input && input.value.trim()) {
+                    handleEditCarteira(input.value.trim());
+                    setShowEditCarteiraDialog(false);
+                  }
+                }}>
+                  Salvar
+                </Button>
+              </div>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Add Dialog */}
       <AddCobrancaDialog
