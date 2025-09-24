@@ -343,32 +343,38 @@ export function CapacitacaoTab() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Editar Assunto</DialogTitle>
-            <DialogDescription>Altere o nome do assunto</DialogDescription>
+            <DialogDescription>Edite ou exclua as informações do assunto selecionado</DialogDescription>
           </DialogHeader>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              const formData = new FormData(e.currentTarget)
-              const novoNome = formData.get("assunto") as string
-              if (novoNome.trim()) {
-                handleEditAssunto(novoNome.trim())
-                setShowEditAssuntoDialog(false)
-              }
-            }}
-          >
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="assunto">Nome do Assunto</Label>
-                <Input id="assunto" name="assunto" defaultValue={editingAssunto} required />
-              </div>
-            </div>
-            <DialogFooter className="mt-4">
+          <div className="space-y-4">
+            <table className="w-full text-sm">
+              <tbody>
+                <tr>
+                  <td className="font-medium pr-2">Nome:</td>
+                  <td>
+                    <Input id="assunto" name="assunto" defaultValue={editingAssunto} required />
+                  </td>
+                </tr>
+                {/* Adicione outros campos se necessário */}
+              </tbody>
+            </table>
+            <div className="flex justify-end gap-2 mt-4">
               <Button type="button" variant="outline" onClick={() => setShowEditAssuntoDialog(false)}>
                 Cancelar
               </Button>
-              <Button type="submit">Salvar</Button>
-            </DialogFooter>
-          </form>
+              <Button type="button" variant="destructive" onClick={() => { handleDeleteAssunto(editingAssunto); setShowEditAssuntoDialog(false); }}>
+                Excluir
+              </Button>
+              <Button type="button" onClick={() => {
+                const input = document.getElementById('assunto') as HTMLInputElement;
+                if (input && input.value.trim()) {
+                  handleEditAssunto(input.value.trim());
+                  setShowEditAssuntoDialog(false);
+                }
+              }}>
+                Salvar
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
