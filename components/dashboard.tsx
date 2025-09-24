@@ -55,6 +55,10 @@ export function Dashboard() {
             <Badge variant={user?.role === "admin" ? "default" : "secondary"}>
               {user?.role === "admin" ? "Administrador" : "Usuário"}
             </Badge>
+            {/* DEBUG: Mostra papel do usuário logado */}
+            <span className="text-xs text-orange-600">
+              Usuário: {user?.name} | Email: {user?.email} | Papel: {user?.role}
+            </span>
           </div>
 
           <div className="flex items-center space-x-4">
