@@ -118,41 +118,10 @@ export function CapacitacaoTab() {
         <div className="flex gap-2">
           {user?.role === "admin" && (
             <>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Gerenciar Assuntos
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => setShowAddAssuntoDialog(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Novo Assunto
-                  </DropdownMenuItem>
-                  {assuntos.map((assunto, index) => (
-                    <div key={assunto} className="flex items-center justify-between px-2 py-1">
-                      <span className="text-sm max-w-32 truncate">{assunto}</span>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setEditingAssunto(assunto)
-                            setEditingAssuntoIndex(index)
-                            setShowEditAssuntoDialog(true)
-                          }}
-                        >
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeleteAssunto(assunto)}>
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Button variant="outline" onClick={() => setShowAddAssuntoDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Gerenciar Assuntos
+              </Button>
               <Button onClick={() => setShowAddDialog(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Adicionar Treinamento
