@@ -1,116 +1,143 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
+import { useAuth } from "@/lib/auth"
+import { useTheme } from "@/lib/theme"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
+import { LogOut, Users, GraduationCap, UserCheck, UserX, Sun, Moon, Monitor } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { QuadroTab } from "@/components/quadro-tab"
-import { TreinamentoTab } from "@/components/treinamento-tab"
+import { CapacitacaoTab } from "@/components/capacitacao-tab"
 import { TreinadosTab } from "@/components/treinados-tab"
 import { DesligamentosTab } from "@/components/desligamentos-tab"
-import { Building2, LogOut, BarChart3, GraduationCap, Users, UserMinus } from "lucide-react"
+import { AnalyticsOverview } from "@/components/analytics-overview"
+import { mockCapacitacaoRecords } from "@/lib/data"
 
-interface DashboardProps {
-  user: { email: string; role: "admin" | "user" }
-  onLogout: () => void
-}
+export function Dashboard() {
+  const { user, logout } = useAuth()
+  const { theme, setTheme } = useTheme()
+  const [activeTab, setActiveTab] = useState("overview")
 
-export function Dashboard({ user, onLogout }: DashboardProps) {
-  const [activeTab, setActiveTab] = useState("quadro")
-  const [key, setKey] = useState(0) // Chave para forçar remontagem
+  const analyticsData = {
+    totalFuncionarios: 165,
+    totalAtivos: 140,
+    totalTreinamentos: mockCapacitacaoRecords.reduce((acc, record) => acc + record.quantidade, 0),
+    taxaRotatividade: 8.5,
+    tendenciaRotatividade: "down" as const,
+    distribuicaoTurnos: [
+      { name: "Manhã", value: 65 },
+      { name: "Tarde", value: 58 },
+      { name: "Integral", value: 42 },
+    ],
+    evolucaoMensal: [
+      { mes: "Out", ativos: 135, desligamentos: 8, treinamentos: 25 },
+      { mes: "Nov", ativos: 142, desligamentos: 6, treinamentos: 32 },
+      { mes: "Dez", ativos: 138, desligamentos: 9, treinamentos: 28 },
+      { mes: "Jan", ativos: 140, desligamentos: 5, treinamentos: 35 },
+    ],
+  }
 
-  // Função para mudar a aba e forçar remontagem
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-    setKey(prevKey => prevKey + 1);
-  };
+  const themeIcons = {
+    default: <Monitor className="h-4 w-4" />,
+    dark: <Moon className="h-4 w-4" />,
+    light: <Sun className="h-4 w-4" />,
+  }
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="flex items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
-              <Building2 className="w-4 h-4 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-lg font-semibold">Sistema de Acompanhamento</h1>
-              <p className="text-xs text-muted-foreground">Dashboard Corporativo</p>
-            </div>
+      {/* Header */}
+      <header className="border-b bg-card">
+        <div className="flex h-16 items-center justify-between px-6">
+          <div className="flex items-center space-x-4">
+            <h1 className="text-xl font-bold">Sistema de Acompanhamento</h1>
+            <Badge variant={user?.role === "admin" ? "default" : "secondary"}>
+              {user?.role === "admin" ? "Administrador" : "Usuário"}
+            </Badge>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Badge variant={user.role === "admin" ? "default" : "secondary"}>
-                {user.role === "admin" ? "Administrador" : "Usuário"}
-              </Badge>
-              <span className="text-sm text-muted-foreground">{user.email}</span>
-            </div>
-            <Button variant="ghost" size="sm" onClick={onLogout}>
-              <LogOut className="w-4 h-4" />
+          <div className="flex items-center space-x-4">
+            <span className="text-sm text-muted-foreground">Olá, {user?.name}</span>
+
+            {/* Theme Selector */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  {themeIcons[theme]}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setTheme("default")}>
+                  <Monitor className="mr-2 h-4 w-4" />
+                  Padrão
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("dark")}>
+                  <Moon className="mr-2 h-4 w-4" />
+                  Escuro
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("light")}>
+                  <Sun className="mr-2 h-4 w-4" />
+                  Claro
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button variant="ghost" size="sm" onClick={logout}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Sair
             </Button>
           </div>
         </div>
       </header>
 
-      <div className="p-6">
-        <div className="space-y-6">
-          {/* Navegação personalizada */}
-          <div className="bg-muted inline-flex h-9 w-fit items-center justify-center rounded-lg p-[3px] grid w-full grid-cols-4 lg:w-fit lg:grid-cols-4">
-            <button 
-              onClick={() => handleTabChange("quadro")}
-              className={`inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border px-2 py-1 text-sm font-medium whitespace-nowrap transition-all ${
-                activeTab === "quadro" 
-                  ? "bg-background border-input shadow-sm" 
-                  : "border-transparent"
-              }`}
-            >
-              <BarChart3 className="w-4 h-4" />
+      {/* Main Content */}
+      <main className="p-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="overview" className="flex items-center gap-2">
+              <Monitor className="h-4 w-4" />
+              Visão Geral
+            </TabsTrigger>
+            <TabsTrigger value="quadro" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
               Quadro
-            </button>
-            <button 
-              onClick={() => handleTabChange("treinamento")}
-              className={`inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border px-2 py-1 text-sm font-medium whitespace-nowrap transition-all ${
-                activeTab === "treinamento" 
-                  ? "bg-background border-input shadow-sm" 
-                  : "border-transparent"
-              }`}
-            >
-              <GraduationCap className="w-4 h-4" />
-              Treinamento
-            </button>
-            <button 
-              onClick={() => handleTabChange("treinados")}
-              className={`inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border px-2 py-1 text-sm font-medium whitespace-nowrap transition-all ${
-                activeTab === "treinados" 
-                  ? "bg-background border-input shadow-sm" 
-                  : "border-transparent"
-              }`}
-            >
-              <Users className="w-4 h-4" />
+            </TabsTrigger>
+            <TabsTrigger value="capacitacao" className="flex items-center gap-2">
+              <GraduationCap className="h-4 w-4" />
+              Capacitação
+            </TabsTrigger>
+            <TabsTrigger value="treinados" className="flex items-center gap-2">
+              <UserCheck className="h-4 w-4" />
               Treinados
-            </button>
-            <button 
-              onClick={() => handleTabChange("desligamentos")}
-              className={`inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border px-2 py-1 text-sm font-medium whitespace-nowrap transition-all ${
-                activeTab === "desligamentos" 
-                  ? "bg-background border-input shadow-sm" 
-                  : "border-transparent"
-              }`}
-            >
-              <UserMinus className="w-4 h-4" />
+            </TabsTrigger>
+            <TabsTrigger value="desligamentos" className="flex items-center gap-2">
+              <UserX className="h-4 w-4" />
               Desligamentos
-            </button>
-          </div>
+            </TabsTrigger>
+          </TabsList>
 
-          {/* Conteúdo com renderização condicional completa para evitar problemas de desmontagem */}
-          <div key={key} className="animate-fade-in">
-            {activeTab === "quadro" ? <QuadroTab key="quadro-tab" userRole={user.role} /> : null}
-            {activeTab === "treinamento" ? <TreinamentoTab key="treinamento-tab" userRole={user.role} /> : null}
-            {activeTab === "treinados" ? <TreinadosTab key="treinados-tab" userRole={user.role} /> : null}
-            {activeTab === "desligamentos" ? <DesligamentosTab key="desligamentos-tab" userRole={user.role} /> : null}
-          </div>
-        </div>
-      </div>
+          <TabsContent value="overview">
+            <AnalyticsOverview data={analyticsData} />
+          </TabsContent>
+
+          <TabsContent value="quadro">
+            <QuadroTab />
+          </TabsContent>
+
+          <TabsContent value="capacitacao">
+            <CapacitacaoTab />
+          </TabsContent>
+
+          <TabsContent value="treinados">
+            <TreinadosTab />
+          </TabsContent>
+
+          <TabsContent value="desligamentos">
+            <DesligamentosTab />
+          </TabsContent>
+        </Tabs>
+      </main>
     </div>
   )
 }

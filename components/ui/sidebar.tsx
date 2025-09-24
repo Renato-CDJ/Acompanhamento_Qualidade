@@ -67,11 +67,11 @@ function SidebarProvider({
   onOpenChange?: (open: boolean) => void
 }) {
   const isMobile = useIsMobile()
-  const [openMobile, setOpenMobile] = React.useState<boolean>(false)
+  const [openMobile, setOpenMobile] = React.useState(false)
 
   // This is the internal state of the sidebar.
   // We use openProp and setOpenProp for control from outside the component.
-  const [_open, _setOpen] = React.useState<boolean>(defaultOpen)
+  const [_open, _setOpen] = React.useState(defaultOpen)
   const open = openProp ?? _open
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
@@ -107,14 +107,8 @@ function SidebarProvider({
       }
     }
 
-    // Usando uma referência estável para o event listener
-    const stableHandleKeyDown = handleKeyDown;
-    window.addEventListener('keydown', stableHandleKeyDown)
-    
-    // Cleanup function que garante a remoção do mesmo listener que foi adicionado
-    return () => {
-      window.removeEventListener('keydown', stableHandleKeyDown)
-    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
   }, [toggleSidebar])
 
   // We add a state so that we can do data-state="expanded" or "collapsed".
@@ -275,7 +269,7 @@ function SidebarTrigger({
       variant="ghost"
       size="icon"
       className={cn('size-7', className)}
-      onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+  onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
         onClick?.(event)
         toggleSidebar()
       }}

@@ -4,220 +4,225 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { TreinadosTable } from "@/components/treinados-table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Plus, UserCheck, GraduationCap, Calendar, Search, BarChart3 } from "lucide-react"
+import { AddTreinadoDialog } from "@/components/add-treinado-dialog"
 import { TreinadosChart } from "@/components/treinados-chart"
-import { Users, TrendingUp, CheckCircle, Calendar, Plus, Building2 } from "lucide-react"
+import { useAuth } from "@/lib/auth"
+import type { OperadorTreinado, Carteira } from "@/lib/data"
+import { mockOperadoresTreinados, carteirasDisponiveis } from "@/lib/data"
 
-interface TreinadosTabProps {
-  userRole: "admin" | "user"
-}
+export function TreinadosTab() {
+  const { user } = useAuth()
+  const [showAddDialog, setShowAddDialog] = useState(false)
+  const [operadoresTreinados, setOperadoresTreinados] = useState<OperadorTreinado[]>(mockOperadoresTreinados)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [filterCarteira, setFilterCarteira] = useState<Carteira | "all">("all")
 
-export function TreinadosTab({ userRole }: TreinadosTabProps) {
-  // Mock data - em produção viria do backend
-  const [treinadosData] = useState({
-    totalTreinados: 145,
-    ativosAposTreinamento: 132,
-    emPeriodoExperiencia: 13,
-    aprovadosDefinitivo: 119,
-    porCarteira: [
-      { carteira: "CAIXA", total: 45, ativos: 42, experiencia: 3, aprovados: 39 },
-      { carteira: "BTG", total: 32, ativos: 30, experiencia: 2, aprovados: 28 },
-      { carteira: "WILLBANK", total: 28, ativos: 25, experiencia: 3, aprovados: 22 },
-      { carteira: "PEFISA", total: 22, ativos: 20, experiencia: 2, aprovados: 18 },
-      { carteira: "SANTANDER", total: 18, ativos: 15, experiencia: 3, aprovados: 12 },
-    ],
+  // Filter data
+  const filteredOperadores = operadoresTreinados.filter((operador) => {
+    const matchesSearch =
+      operador.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      operador.assunto.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesCarteira = filterCarteira === "all" || operador.carteira === filterCarteira
+    return matchesSearch && matchesCarteira
   })
 
-  const statsCards = [
-    {
-      title: "Total Treinados",
-      value: treinadosData.totalTreinados,
-      icon: Users,
-      color: "text-blue-500",
-      bgColor: "bg-blue-500/10",
-      description: "Funcionários que concluíram treinamento",
+  // Calculate statistics
+  const totalTreinados = operadoresTreinados.length
+  const treinadosPorCarteira = carteirasDisponiveis.map((carteira) => {
+    const count = operadoresTreinados.filter((op) => op.carteira === carteira).length
+    return { carteira, count }
+  })
+
+  const treinadosPorAssunto = operadoresTreinados.reduce(
+    (acc, operador) => {
+      acc[operador.assunto] = (acc[operador.assunto] || 0) + 1
+      return acc
     },
-    {
-      title: "Ativos",
-      value: treinadosData.ativosAposTreinamento,
-      icon: CheckCircle,
-      color: "text-green-500",
-      bgColor: "bg-green-500/10",
-      description: "Funcionários ativos após treinamento",
-    },
-    {
-      title: "Em Experiência",
-      value: treinadosData.emPeriodoExperiencia,
-      icon: Calendar,
-      color: "text-yellow-500",
-      bgColor: "bg-yellow-500/10",
-      description: "Em período de experiência",
-    },
-    {
-      title: "Aprovados",
-      value: treinadosData.aprovadosDefinitivo,
-      icon: TrendingUp,
-      color: "text-purple-500",
-      bgColor: "bg-purple-500/10",
-      description: "Aprovados definitivamente",
-    },
-  ]
+    {} as Record<string, number>,
+  )
+
+  const handleAddTreinado = (novoTreinado: Omit<OperadorTreinado, "id">) => {
+    const newOperador: OperadorTreinado = {
+      ...novoTreinado,
+      id: Date.now().toString(),
+    }
+    setOperadoresTreinados([...operadoresTreinados, newOperador])
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Funcionários Treinados</h2>
-          <p className="text-muted-foreground">Acompanhamento de funcionários que concluíram o treinamento</p>
+          <h2 className="text-2xl font-bold">Operadores Treinados</h2>
+          <p className="text-muted-foreground">Visualize operadores que concluíram treinamentos</p>
         </div>
+        {user?.role === "admin" && (
+          <Button onClick={() => setShowAddDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Adicionar Treinado
+          </Button>
+        )}
       </div>
 
-      {/* Estatísticas Gerais */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statsCards.map((stat) => {
-          const Icon = stat.icon
-          return (
-            <Card key={stat.title} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                    <p className="text-2xl font-bold">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
-                  </div>
-                  <div className={`w-12 h-12 rounded-lg ${stat.bgColor} flex items-center justify-center`}>
-                    <Icon className={`w-6 h-6 ${stat.color}`} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Treinados</CardTitle>
+            <UserCheck className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalTreinados}</div>
+            <p className="text-xs text-muted-foreground">operadores certificados</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Este Mês</CardTitle>
+            <Calendar className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {
+                operadoresTreinados.filter((op) => new Date(op.dataConclusao).getMonth() === new Date().getMonth())
+                  .length
+              }
+            </div>
+            <p className="text-xs text-muted-foreground">novos treinados</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Mais Treinada</CardTitle>
+            <GraduationCap className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">
+              {treinadosPorCarteira.reduce((max, current) => (current.count > max.count ? current : max)).carteira}
+            </div>
+            <p className="text-xs text-muted-foreground">carteira líder</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Assunto Popular</CardTitle>
+            <BarChart3 className="h-4 w-4 text-orange-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">
+              {
+                Object.entries(treinadosPorAssunto)
+                  .reduce((max, [assunto, count]) => (count > max.count ? { assunto, count } : max), {
+                    assunto: "",
+                    count: 0,
+                  })
+                  .assunto.split(" ")[0]
+              }
+            </div>
+            <p className="text-xs text-muted-foreground">mais solicitado</p>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Estatísticas por Carteira */}
+      {/* Chart */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Building2 className="w-5 h-5" />
+            <BarChart3 className="h-5 w-5" />
             Treinados por Carteira
           </CardTitle>
-          <CardDescription>Distribuição de funcionários treinados por carteira</CardDescription>
+          <CardDescription>Distribuição de operadores treinados por carteira</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {treinadosData.porCarteira.map((carteira) => (
-              <div
-                key={carteira.carteira}
-                className="p-4 border border-border rounded-lg hover:shadow-sm transition-shadow"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold">{carteira.carteira}</h3>
-                  <Badge variant="outline">{carteira.total} total</Badge>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Ativos:</span>
-                    <span className="font-medium text-green-500">{carteira.ativos}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Em Experiência:</span>
-                    <span className="font-medium text-yellow-500">{carteira.experiencia}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Aprovados:</span>
-                    <span className="font-medium text-purple-500">{carteira.aprovados}</span>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-2 mt-2">
-                    <div
-                      className="bg-green-500 h-2 rounded-full transition-all"
-                      style={{
-                        width: carteira.total > 0 ? `${(carteira.ativos / carteira.total) * 100}%` : "0%",
-                      }}
-                    />
-                  </div>
-                  <div className="text-xs text-muted-foreground text-center">
-                    {carteira.total > 0 ? ((carteira.ativos / carteira.total) * 100).toFixed(1) : 0}% ativos
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <TreinadosChart data={operadoresTreinados} />
         </CardContent>
       </Card>
 
-      {/* Gráficos e Tabela */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Gráfico de Análise */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
-              Análise de Treinados
-            </CardTitle>
-            <CardDescription>Distribuição e status dos funcionários treinados</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <TreinadosChart data={treinadosData} />
-          </CardContent>
-        </Card>
-
-        {/* Tabela de Treinados */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                Registro de Treinados
-              </span>
-              {userRole === "admin" && (
-                <Button size="sm">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Adicionar
-                </Button>
-              )}
-            </CardTitle>
-            <CardDescription>Controle de funcionários que concluíram treinamento</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <TreinadosTable userRole={userRole} />
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Resumo de Performance */}
+      {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>Resumo de Performance</CardTitle>
-          <CardDescription>Indicadores de sucesso do programa de treinamento</CardDescription>
+          <CardTitle>Operadores Treinados</CardTitle>
+          <CardDescription>Lista completa de operadores que concluíram treinamentos</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center p-4 bg-green-500/5 rounded-lg border border-green-500/20">
-              <p className="text-2xl font-bold text-green-500">
-                {((treinadosData.ativosAposTreinamento / treinadosData.totalTreinados) * 100).toFixed(1)}%
-              </p>
-              <p className="text-sm text-muted-foreground">Taxa de Retenção</p>
-              <p className="text-xs text-muted-foreground mt-1">Funcionários que permaneceram ativos</p>
+          <div className="flex gap-4 mb-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por nome ou assunto..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8"
+                />
+              </div>
             </div>
-            <div className="text-center p-4 bg-purple-500/5 rounded-lg border border-purple-500/20">
-              <p className="text-2xl font-bold text-purple-500">
-                {((treinadosData.aprovadosDefinitivo / treinadosData.totalTreinados) * 100).toFixed(1)}%
-              </p>
-              <p className="text-sm text-muted-foreground">Taxa de Aprovação</p>
-              <p className="text-xs text-muted-foreground mt-1">Funcionários aprovados definitivamente</p>
-            </div>
-            <div className="text-center p-4 bg-yellow-500/5 rounded-lg border border-yellow-500/20">
-              <p className="text-2xl font-bold text-yellow-500">
-                {((treinadosData.emPeriodoExperiencia / treinadosData.totalTreinados) * 100).toFixed(1)}%
-              </p>
-              <p className="text-sm text-muted-foreground">Em Avaliação</p>
-              <p className="text-xs text-muted-foreground mt-1">Funcionários em período de experiência</p>
-            </div>
+            <Select value={filterCarteira} onValueChange={(value: Carteira | "all") => setFilterCarteira(value)}>
+              <SelectTrigger className="w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as Carteiras</SelectItem>
+                {carteirasDisponiveis.map((carteira) => (
+                  <SelectItem key={carteira} value={carteira}>
+                    {carteira}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nome</TableHead>
+                <TableHead>Carteira</TableHead>
+                <TableHead>Turno</TableHead>
+                <TableHead>Assunto</TableHead>
+                <TableHead>Data Início</TableHead>
+                <TableHead>Data Conclusão</TableHead>
+                <TableHead>Responsável</TableHead>
+                <TableHead>Observação</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredOperadores.map((operador) => (
+                <TableRow key={operador.id}>
+                  <TableCell className="font-medium">{operador.nome}</TableCell>
+                  <TableCell>
+                    <Badge variant="secondary">{operador.carteira}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="capitalize">
+                      {operador.turno}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="max-w-32 truncate" title={operador.assunto}>
+                    {operador.assunto}
+                  </TableCell>
+                  <TableCell>{new Date(operador.dataInicio).toLocaleDateString("pt-BR")}</TableCell>
+                  <TableCell>{new Date(operador.dataConclusao).toLocaleDateString("pt-BR")}</TableCell>
+                  <TableCell>{operador.responsavel}</TableCell>
+                  <TableCell className="max-w-48 truncate" title={operador.observacao}>
+                    {operador.observacao}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
+
+      {/* Add Dialog */}
+      <AddTreinadoDialog open={showAddDialog} onOpenChange={setShowAddDialog} onAdd={handleAddTreinado} />
     </div>
   )
 }

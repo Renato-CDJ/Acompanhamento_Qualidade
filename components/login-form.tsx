@@ -5,113 +5,82 @@ import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Building2, Lock, Mail } from "lucide-react"
+import { useAuth } from "@/lib/auth"
+import { Loader2 } from "lucide-react"
 
-interface LoginFormProps {
-  onLogin: (email: string, password: string) => boolean
-}
-
-export function LoginForm({ onLogin }: LoginFormProps) {
+export function LoginForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const { login, isLoading } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
-    setIsLoading(true)
 
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    const success = onLogin(email, password)
+    const success = await login(email, password)
     if (!success) {
-      setError("Email ou senha incorretos")
+      setError("Credenciais inválidas. Tente admin@empresa.com/admin123 ou user@empresa.com/user123")
     }
-    setIsLoading(false)
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-accent/5">
-      <div className="w-full max-w-md animate-fade-in">
-        <Card className="border-border/50 shadow-2xl">
-          <CardHeader className="text-center space-y-4">
-            <div className="mx-auto w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-primary" />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 light:from-orange-50 light:to-orange-100">
+      <Card className="w-full max-w-md mx-4">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold">Sistema de Acompanhamento</CardTitle>
+          <CardDescription>Faça login para acessar o sistema</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="seu@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
-            <div>
-              <CardTitle className="text-2xl font-bold">Sistema de Acompanhamento</CardTitle>
-              <CardDescription className="text-muted-foreground">Faça login para acessar o dashboard</CardDescription>
+            <div className="space-y-2">
+              <Label htmlFor="password">Senha</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
             </div>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="seu@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Senha</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
-
-              {error && (
-                <Alert variant="destructive" className="animate-slide-up">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Entrando...
+                </>
+              ) : (
+                "Entrar"
               )}
-
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground"></div>
-                    Entrando...
-                  </div>
-                ) : (
-                  "Entrar"
-                )}
-              </Button>
-            </form>
-
-            <div className="mt-6 p-4 bg-muted/30 rounded-lg">
-              <p className="text-sm text-muted-foreground mb-2">Contas de teste:</p>
-              <div className="text-xs space-y-1">
-                <div>
-                  <strong>Admin:</strong> admin@empresa.com / admin123
-                </div>
-                <div>
-                  <strong>Usuário:</strong> user@empresa.com / user123
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </Button>
+          </form>
+          <div className="mt-4 text-sm text-muted-foreground text-center">
+            <p>Credenciais de teste:</p>
+            <p>Admin: admin@empresa.com / admin123</p>
+            <p>Usuário: user@empresa.com / user123</p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
