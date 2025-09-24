@@ -21,7 +21,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import type { Turno, EstatisticaCobranca, EstatisticaCobrancaGeral } from "@/lib/data"
-import { mockEstatisticasCobranca, mockEstatisticasCobrancaGeral, carteirasDisponiveis } from "@/lib/data"
+import { mockEstatisticasCobranca, mockEstatisticasCobrancaGeral, carteirasDisponiveis, adicionarCarteira } from "@/lib/data"
 
 interface CobrancaSectionProps {
   selectedTurno: Turno
@@ -82,6 +82,7 @@ export function CobrancaSection({ selectedTurno }: CobrancaSectionProps) {
   const handleAddCarteira = (novaCarteira: string) => {
     if (!carteiras.includes(novaCarteira)) {
       setCarteiras([...carteiras, novaCarteira])
+      adicionarCarteira(novaCarteira)
     }
   }
 

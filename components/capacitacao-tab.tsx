@@ -21,7 +21,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import type { CapacitacaoRecord, EstatisticaCapacitacao } from "@/lib/data"
-import { mockCapacitacaoRecords, carteirasDisponiveis, assuntosCapacitacao } from "@/lib/data"
+import { mockCapacitacaoRecords, carteirasDisponiveis, assuntosCapacitacao, adicionarAssuntoCapacitacao } from "@/lib/data"
 
 export function CapacitacaoTab() {
   const { user } = useAuth()
@@ -83,6 +83,7 @@ export function CapacitacaoTab() {
   const handleAddAssunto = (novoAssunto: string) => {
     if (!assuntos.includes(novoAssunto)) {
       setAssuntos([...assuntos, novoAssunto])
+      adicionarAssuntoCapacitacao(novoAssunto)
     }
   }
 
