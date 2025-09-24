@@ -98,6 +98,13 @@ export function CobrancaChart({ data }: CobrancaChartProps) {
     return null
   }
 
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-80 text-muted-foreground">
+        Nenhum dado disponível para o gráfico.
+      </div>
+    )
+  }
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -111,7 +118,10 @@ export function CobrancaChart({ data }: CobrancaChartProps) {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) => {
+                    const pct = typeof percent === "number" ? percent : 0;
+                    return `${name} ${(pct * 100).toFixed(0)}%`;
+                  }}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"

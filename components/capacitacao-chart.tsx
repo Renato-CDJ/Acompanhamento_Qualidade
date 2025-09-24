@@ -58,6 +58,13 @@ export function CapacitacaoChart({ data }: CapacitacaoChartProps) {
     percentage: 0, // será calculado depois
   }))
 
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-80 text-muted-foreground">
+        Nenhum dado disponível para o gráfico.
+      </div>
+    )
+  }
   // Calcular percentuais
   const totalGeral = pieData.reduce((sum, item) => sum + item.value, 0)
   pieData.forEach((item) => {

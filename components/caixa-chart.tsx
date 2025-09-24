@@ -87,6 +87,13 @@ export function CaixaChart({ data }: CaixaChartProps) {
     return null
   }
 
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-80 text-muted-foreground">
+        Nenhum dado disponível para o gráfico.
+      </div>
+    )
+  }
   return (
     <div className="space-y-6">
       {/* Gráfico Principal - Barras Empilhadas */}
