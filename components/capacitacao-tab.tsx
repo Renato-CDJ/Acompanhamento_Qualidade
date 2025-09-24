@@ -117,16 +117,56 @@ export function CapacitacaoTab() {
         </div>
         <div className="flex gap-2">
           {user?.role === "admin" && (
-            <>
-              <Button variant="outline" onClick={() => setShowAddAssuntoDialog(true)}>
+            <div className="mb-4">
+              <Button variant="outline" onClick={() => setShowAddAssuntoDialog(true)} className="mb-2">
                 <Plus className="h-4 w-4 mr-2" />
                 Gerenciar Assuntos
               </Button>
-              <Button onClick={() => setShowAddDialog(true)}>
+              <div className="bg-muted rounded-lg p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold text-base">Assuntos de Capacitação</span>
+                  <Button size="sm" variant="ghost" onClick={() => setShowAddAssuntoDialog(true)}>
+                    <Plus className="h-4 w-4 mr-1" /> Novo
+                  </Button>
+                </div>
+                <ul className="space-y-2">
+                  {assuntos.map((assunto, index) => (
+                    <li key={assunto} className="flex items-center justify-between bg-background rounded px-3 py-2">
+                      <span className="text-sm max-w-40 truncate">{assunto}</span>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setEditingAssunto(assunto)
+                            setEditingAssuntoIndex(index)
+                            setShowEditAssuntoDialog(true)
+                          }}
+                          title="Editar"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteAssunto(assunto)}
+                          title="Excluir"
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </li>
+                  ))}
+                  {assuntos.length === 0 && (
+                    <li className="text-muted-foreground text-sm">Nenhum assunto cadastrado.</li>
+                  )}
+                </ul>
+              </div>
+              <Button onClick={() => setShowAddDialog(true)} className="mt-4">
                 <Plus className="h-4 w-4 mr-2" />
                 Adicionar Treinamento
               </Button>
-            </>
+            </div>
           )}
         </div>
       </div>
