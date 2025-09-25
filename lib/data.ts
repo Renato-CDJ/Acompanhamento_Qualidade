@@ -302,7 +302,7 @@ export const turnosDisponiveis: { value: Turno; label: string }[] = [
   { value: "integral", label: "Integral" },
 ]
 
-export function adicionarCarteira(novaCarteira: string) {
+export function registrarCarteira(novaCarteira: string) {
   if (!carteirasDisponiveis.includes(novaCarteira)) {
     carteirasDisponiveis.push(novaCarteira)
   }

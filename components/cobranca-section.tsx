@@ -21,7 +21,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import type { Turno, EstatisticaCobranca, EstatisticaCobrancaGeral } from "@/lib/data"
-import { mockEstatisticasCobranca, mockEstatisticasCobrancaGeral, carteirasDisponiveis, adicionarCarteira } from "@/lib/data"
+import { mockEstatisticasCobranca, mockEstatisticasCobrancaGeral, carteirasDisponiveis, registrarCarteira } from "@/lib/data"
 
 interface CobrancaSectionProps {
   selectedTurno: Turno
@@ -30,7 +30,7 @@ interface CobrancaSectionProps {
 export function CobrancaSection({ selectedTurno }: CobrancaSectionProps) {
   const { user } = useAuth()
   const [showAddDialog, setShowAddDialog] = useState(false)
-  const [showAddCarteiraDialog, setShowAddCarteiraDialog] = useState(false)
+  const [showGerenciarCarteirasDialog, setShowGerenciarCarteirasDialog] = useState(false)
   const [showEditCarteiraDialog, setShowEditCarteiraDialog] = useState(false)
   const [editingCarteira, setEditingCarteira] = useState<string>("")
   const [editingCarteiraIndex, setEditingCarteiraIndex] = useState<number>(-1)
@@ -57,10 +57,16 @@ export function CobrancaSection({ selectedTurno }: CobrancaSectionProps) {
       : estatisticasPorCarteira.filter((item) => item.turno === selectedTurno)
 
   // Adicionar carteira
-  const handleAddCarteira = (novaCarteira: string) => {
-    if (!carteiras.includes(novaCarteira)) {
+  function handleAddCarteiraForm(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    const novaCarteira = (formData.get("carteira") as string).trim().toUpperCase()
+    if (novaCarteira && !carteiras.includes(novaCarteira)) {
       setCarteiras([...carteiras, novaCarteira])
-      adicionarCarteira(novaCarteira)
+      if (typeof registrarCarteira === "function") {
+        registrarCarteira(novaCarteira)
+      }
+      (e.target as HTMLFormElement).reset()
     }
   }
 
@@ -82,26 +88,41 @@ export function CobrancaSection({ selectedTurno }: CobrancaSectionProps) {
       {/* Gerenciar Carteiras Dropdown */}
       {user?.role === "admin" && (
         <div className="flex justify-end mb-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                <Plus className="h-4 w-4 mr-2" />
-                Gerenciar Carteiras
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="min-w-[260px]">
-              <DropdownMenuItem onClick={() => setShowAddCarteiraDialog(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Nova Carteira
-              </DropdownMenuItem>
-              <div className="border-t my-2" />
+          <Button variant="outline" onClick={() => setShowGerenciarCarteirasDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Gerenciar Carteiras
+          </Button>
+        </div>
+      )}
+
+      {/* Gerenciar Carteiras Dialog */}
+  <Dialog open={showGerenciarCarteirasDialog} onOpenChange={setShowGerenciarCarteirasDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Gerenciar Carteiras</DialogTitle>
+            <DialogDescription>Adicione, edite ou exclua carteiras de cobrança</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <form onSubmit={handleAddCarteiraForm}>
+              <div className="flex gap-2 items-end">
+                <div className="flex-1">
+                  <Label htmlFor="carteira">Nova Carteira</Label>
+                  <Input id="carteira" name="carteira" placeholder="Ex: NOVA CARTEIRA" required />
+                </div>
+                <Button type="submit" variant="default">
+                  <Plus className="h-4 w-4 mr-1" /> Adicionar
+                </Button>
+              </div>
+            </form>
+            <div className="border-t my-2" />
+            <ul className="space-y-2">
               {carteiras.length === 0 && (
-                <div className="px-2 py-1 text-muted-foreground text-sm">Nenhuma carteira cadastrada.</div>
+                <li className="text-muted-foreground text-sm">Nenhuma carteira cadastrada.</li>
               )}
               {carteiras.map((carteira, index) => (
-                <div key={carteira} className="flex items-center justify-between px-2 py-1">
-                  <span className="text-sm max-w-[140px] truncate">{carteira}</span>
-                  <div className="flex gap-1">
+                <li key={carteira} className="flex items-center justify-between bg-background rounded px-3 py-2">
+                  <span className="text-sm max-w-40 truncate">{carteira}</span>
+                  <div className="flex gap-2">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -123,44 +144,10 @@ export function CobrancaSection({ selectedTurno }: CobrancaSectionProps) {
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
-                </div>
+                </li>
               ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      )}
-
-      {/* Add Carteira Dialog */}
-      <Dialog open={showAddCarteiraDialog} onOpenChange={setShowAddCarteiraDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Adicionar Nova Carteira</DialogTitle>
-            <DialogDescription>Insira o nome da nova carteira de cobrança</DialogDescription>
-          </DialogHeader>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              const formData = new FormData(e.currentTarget)
-              const novaCarteira = formData.get("carteira") as string
-              if (novaCarteira.trim()) {
-                handleAddCarteira(novaCarteira.trim().toUpperCase())
-                setShowAddCarteiraDialog(false)
-              }
-            }}
-          >
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="carteira">Nome da Carteira</Label>
-                <Input id="carteira" name="carteira" placeholder="Ex: NOVA CARTEIRA" required />
-              </div>
-            </div>
-            <DialogFooter className="mt-4">
-              <Button type="button" variant="outline" onClick={() => setShowAddCarteiraDialog(false)}>
-                Cancelar
-              </Button>
-              <Button type="submit">Adicionar</Button>
-            </DialogFooter>
-          </form>
+            </ul>
+          </div>
         </DialogContent>
       </Dialog>
 
