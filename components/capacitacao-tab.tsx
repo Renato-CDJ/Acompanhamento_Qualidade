@@ -118,51 +118,10 @@ export function CapacitacaoTab() {
         <div className="flex gap-2">
           {user?.role === "admin" && (
             <div className="mb-4 flex gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Gerenciar Assuntos
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="min-w-[260px]">
-                  <DropdownMenuItem onClick={() => setShowAddAssuntoDialog(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Novo Assunto
-                  </DropdownMenuItem>
-                  <div className="border-t my-2" />
-                  {assuntos.length === 0 && (
-                    <div className="px-2 py-1 text-muted-foreground text-sm">Nenhum assunto cadastrado.</div>
-                  )}
-                  {assuntos.map((assunto, index) => (
-                    <div key={assunto} className="flex items-center justify-between px-2 py-1">
-                      <span className="text-sm max-w-[140px] truncate">{assunto}</span>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setEditingAssunto(assunto)
-                            setEditingAssuntoIndex(index)
-                            setShowEditAssuntoDialog(true)
-                          }}
-                          title="Editar"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteAssunto(assunto)}
-                          title="Excluir"
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Button variant="outline" onClick={() => setShowAddAssuntoDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Gerenciar Assuntos
+              </Button>
               <Button onClick={() => setShowAddDialog(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Adicionar Treinamento
@@ -396,37 +355,72 @@ export function CapacitacaoTab() {
         </DialogContent>
       </Dialog>
 
-      {/* Add Assunto Dialog */}
+      {/* Gerenciar Assuntos Dialog */}
       <Dialog open={showAddAssuntoDialog} onOpenChange={setShowAddAssuntoDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Adicionar Novo Assunto</DialogTitle>
-            <DialogDescription>Insira um novo assunto de capacitação</DialogDescription>
+            <DialogTitle>Gerenciar Assuntos</DialogTitle>
+            <DialogDescription>Adicione, edite ou exclua assuntos de capacitação</DialogDescription>
           </DialogHeader>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              const formData = new FormData(e.currentTarget)
-              const novoAssunto = formData.get("assunto") as string
-              if (novoAssunto.trim()) {
-                handleAddAssunto(novoAssunto.trim())
-                setShowAddAssuntoDialog(false)
-              }
-            }}
-          >
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="assunto">Nome do Assunto</Label>
-                <Input id="assunto" name="assunto" placeholder="Ex: Treinamento de Vendas" required />
+          <div className="space-y-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                const formData = new FormData(e.currentTarget)
+                const novoAssunto = formData.get("assunto") as string
+                if (novoAssunto.trim()) {
+                  handleAddAssunto(novoAssunto.trim())
+                  setTimeout(() => {
+                    const input = document.getElementById("assunto") as HTMLInputElement
+                    if (input) input.value = ""
+                  }, 0)
+                }
+              }}
+            >
+              <div className="flex gap-2 items-end">
+                <div className="flex-1">
+                  <Label htmlFor="assunto">Novo Assunto</Label>
+                  <Input id="assunto" name="assunto" placeholder="Ex: Treinamento de Vendas" required />
+                </div>
+                <Button type="submit" variant="default">
+                  <Plus className="h-4 w-4 mr-1" /> Adicionar
+                </Button>
               </div>
-            </div>
-            <DialogFooter className="mt-4">
-              <Button type="button" variant="outline" onClick={() => setShowAddAssuntoDialog(false)}>
-                Cancelar
-              </Button>
-              <Button type="submit">Adicionar</Button>
-            </DialogFooter>
-          </form>
+            </form>
+            <div className="border-t my-2" />
+            <ul className="space-y-2">
+              {assuntos.length === 0 && (
+                <li className="text-muted-foreground text-sm">Nenhum assunto cadastrado.</li>
+              )}
+              {assuntos.map((assunto, index) => (
+                <li key={assunto} className="flex items-center justify-between bg-background rounded px-3 py-2">
+                  <span className="text-sm max-w-40 truncate">{assunto}</span>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setEditingAssunto(assunto)
+                        setEditingAssuntoIndex(index)
+                        setShowEditAssuntoDialog(true)
+                      }}
+                      title="Editar"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteAssunto(assunto)}
+                      title="Excluir"
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
         </DialogContent>
       </Dialog>
 
