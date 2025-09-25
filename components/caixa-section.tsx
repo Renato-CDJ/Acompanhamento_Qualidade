@@ -98,6 +98,7 @@ export function CaixaSection({ selectedTurno }: CaixaSectionProps) {
       return
     }
     setTiposEstatisticas((prev) => prev.filter((tipo) => tipo.id !== id))
+    setEstatisticas((prev) => prev.filter((record) => record.tipo !== id))
   }
 
   const handleEditRecord = (updatedRecord: EstatisticaCaixa) => {

@@ -15,6 +15,7 @@ export interface EstatisticaCaixa {
   id: string
   data: string
   turno: Turno
+  tipo: string // id do tipo de estatística
   total: number
   ativos: number
   ferias: number
@@ -98,6 +99,7 @@ export const mockEstatisticasCaixa: EstatisticaCaixa[] = [
     id: "1",
     data: "2024-01-15",
     turno: "manha",
+    tipo: "total",
     total: 25,
     ativos: 20,
     ferias: 3,
@@ -107,6 +109,7 @@ export const mockEstatisticasCaixa: EstatisticaCaixa[] = [
     id: "2",
     data: "2024-01-15",
     turno: "tarde",
+    tipo: "total",
     total: 30,
     ativos: 25,
     ferias: 2,
@@ -116,6 +119,7 @@ export const mockEstatisticasCaixa: EstatisticaCaixa[] = [
     id: "3",
     data: "2024-01-16",
     turno: "manha",
+    tipo: "total",
     total: 24,
     ativos: 22,
     ferias: 1,
