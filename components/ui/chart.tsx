@@ -106,20 +106,22 @@ const ChartTooltip = RechartsPrimitive.Tooltip
 
 function ChartTooltipContent({
   active,
-  payload,
+  payload: tooltipPayload,
   className,
   indicator = 'dot',
   hideLabel = false,
   hideIndicator = false,
-  label,
+  label: tooltipLabelProp,
   labelFormatter,
   labelClassName,
   formatter,
   color,
   nameKey,
   labelKey,
-}: React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
+}: Omit<React.ComponentProps<typeof RechartsPrimitive.Tooltip>, 'payload' | 'label'> &
   React.ComponentProps<'div'> & {
+    payload?: any
+    label?: any
     hideLabel?: boolean
     hideIndicator?: boolean
     indicator?: 'line' | 'dot' | 'dashed'
@@ -128,23 +130,31 @@ function ChartTooltipContent({
   }) {
   const { config } = useChart()
 
+  // Corrige o acesso ao payload
+  let safePayload: any[] = []
+  if (Array.isArray(tooltipPayload)) {
+    safePayload = tooltipPayload
+  } else if (tooltipPayload && Array.isArray((tooltipPayload as any).payload)) {
+    safePayload = (tooltipPayload as any).payload
+  }
+
   const tooltipLabel = React.useMemo(() => {
-    if (hideLabel || !payload?.length) {
+    if (hideLabel || !safePayload.length) {
       return null
     }
 
-    const [item] = payload
+    const [item] = safePayload
     const key = `${labelKey || item?.dataKey || item?.name || 'value'}`
     const itemConfig = getPayloadConfigFromPayload(config, item, key)
     const value =
-      !labelKey && typeof label === 'string'
-        ? config[label as keyof typeof config]?.label || label
+      !labelKey && typeof tooltipLabelProp === 'string'
+        ? config[tooltipLabelProp as keyof typeof config]?.label || tooltipLabelProp
         : itemConfig?.label
 
     if (labelFormatter) {
       return (
         <div className={cn('font-medium', labelClassName)}>
-          {labelFormatter(value, payload)}
+          {labelFormatter(value, safePayload)}
         </div>
       )
     }
@@ -155,20 +165,20 @@ function ChartTooltipContent({
 
     return <div className={cn('font-medium', labelClassName)}>{value}</div>
   }, [
-    label,
+    tooltipLabelProp,
     labelFormatter,
-    payload,
+    safePayload,
     hideLabel,
     labelClassName,
     config,
     labelKey,
   ])
 
-  if (!active || !payload?.length) {
+  if (!active || !safePayload.length) {
     return null
   }
 
-  const nestLabel = payload.length === 1 && indicator !== 'dot'
+  const nestLabel = safePayload.length === 1 && indicator !== 'dot'
 
   return (
     <div
@@ -179,10 +189,10 @@ function ChartTooltipContent({
     >
       {!nestLabel ? tooltipLabel : null}
       <div className="grid gap-1.5">
-        {payload.map((item, index) => {
+        {safePayload.map((item: any, index: number) => {
           const key = `${nameKey || item.name || item.dataKey || 'value'}`
           const itemConfig = getPayloadConfigFromPayload(config, item, key)
-          const indicatorColor = color || item.payload.fill || item.color
+          const indicatorColor = color || item.payload?.fill || item.color
 
           return (
             <div
@@ -253,17 +263,26 @@ const ChartLegend = RechartsPrimitive.Legend
 function ChartLegendContent({
   className,
   hideIcon = false,
-  payload,
+  payload: legendPayload,
   verticalAlign = 'bottom',
   nameKey,
-}: React.ComponentProps<'div'> &
-  Pick<RechartsPrimitive.LegendProps, 'payload' | 'verticalAlign'> & {
+}: Omit<React.ComponentProps<'div'>, 'payload'> & {
+    payload?: any
+    verticalAlign?: 'top' | 'bottom'
     hideIcon?: boolean
     nameKey?: string
   }) {
   const { config } = useChart()
 
-  if (!payload?.length) {
+  // Corrige o acesso ao payload
+  let safePayload: any[] = []
+  if (Array.isArray(legendPayload)) {
+    safePayload = legendPayload
+  } else if (legendPayload && Array.isArray((legendPayload as any).payload)) {
+    safePayload = (legendPayload as any).payload
+  }
+
+  if (!safePayload.length) {
     return null
   }
 
@@ -275,7 +294,7 @@ function ChartLegendContent({
         className,
       )}
     >
-      {payload.map((item) => {
+      {safePayload.map((item: any, index: number) => {
         const key = `${nameKey || item.dataKey || 'value'}`
         const itemConfig = getPayloadConfigFromPayload(config, item, key)
 
@@ -316,18 +335,18 @@ function getPayloadConfigFromPayload(
 
   const payloadPayload =
     'payload' in payload &&
-    typeof payload.payload === 'object' &&
-    payload.payload !== null
-      ? payload.payload
+    typeof (payload as any).payload === 'object' &&
+    (payload as any).payload !== null
+      ? (payload as any).payload
       : undefined
 
   let configLabelKey: string = key
 
   if (
     key in payload &&
-    typeof payload[key as keyof typeof payload] === 'string'
+    typeof (payload as any)[key] === 'string'
   ) {
-    configLabelKey = payload[key as keyof typeof payload] as string
+    configLabelKey = (payload as any)[key] as string
   } else if (
     payloadPayload &&
     key in payloadPayload &&
