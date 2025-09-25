@@ -128,43 +128,80 @@ export function CaixaSection({ selectedTurno }: CaixaSectionProps) {
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Estatísticas do Quadro</h3>
           {user?.role === "admin" && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Gerenciar Estatísticas
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => setShowAddEstatisticaDialog(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nova Estatística
-                </DropdownMenuItem>
-                {tiposEstatisticas
-                  .filter((tipo) => !["total", "ativos", "ferias", "afastamento"].includes(tipo.id))
-                  .map((tipo) => (
-                    <div key={tipo.id} className="flex items-center justify-between px-2 py-1">
-                      <span className="text-sm">{tipo.nome}</span>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setEditingEstatistica(tipo)
-                            setShowEditEstatisticaDialog(true)
-                          }}
-                        >
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeleteTipoEstatistica(tipo.id)}>
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button variant="outline" size="sm" onClick={() => setShowAddEstatisticaDialog(true)}>
+              <Settings className="h-4 w-4 mr-2" />
+              Gerenciar Estatísticas
+            </Button>
           )}
+      {/* Gerenciar Estatísticas Dialog */}
+      <Dialog open={showAddEstatisticaDialog} onOpenChange={setShowAddEstatisticaDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Gerenciar Estatísticas</DialogTitle>
+            <DialogDescription>Adicione, edite ou exclua estatísticas do quadro</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                const formData = new FormData(e.currentTarget)
+                const novoTipo = formData.get("nome") as string
+                if (novoTipo.trim()) {
+                  handleAddTipoEstatistica(novoTipo.trim())
+                  setTimeout(() => {
+                    const input = document.getElementById("nome") as HTMLInputElement
+                    if (input) input.value = ""
+                  }, 0)
+                }
+              }}
+            >
+              <div className="flex gap-2 items-end">
+                <div className="flex-1">
+                  <Label htmlFor="nome">Nova Estatística</Label>
+                  <Input id="nome" name="nome" placeholder="Ex: Licença Médica" required />
+                </div>
+                <Button type="submit" variant="default">
+                  <Plus className="h-4 w-4 mr-1" /> Adicionar
+                </Button>
+              </div>
+            </form>
+            <div className="border-t my-2" />
+            <ul className="space-y-2">
+              {tiposEstatisticas.filter((tipo) => !["total", "ativos", "ferias", "afastamento"].includes(tipo.id)).length === 0 && (
+                <li className="text-muted-foreground text-sm">Nenhuma estatística personalizada cadastrada.</li>
+              )}
+              {tiposEstatisticas
+                .filter((tipo) => !["total", "ativos", "ferias", "afastamento"].includes(tipo.id))
+                .map((tipo) => (
+                  <li key={tipo.id} className="flex items-center justify-between bg-background rounded px-3 py-2">
+                    <span className="text-sm max-w-40 truncate">{tipo.nome}</span>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setEditingEstatistica(tipo)
+                          setShowEditEstatisticaDialog(true)
+                        }}
+                        title="Editar"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteTipoEstatistica(tipo.id)}
+                        title="Excluir"
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </li>
+                ))}
+            </ul>
+          </div>
+        </DialogContent>
+      </Dialog>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
