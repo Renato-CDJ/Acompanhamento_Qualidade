@@ -93,20 +93,17 @@ export function CobrancaSection({ selectedTurno }: CobrancaSectionProps) {
             <CardDescription>Desempenho de cada carteira de cobrança</CardDescription>
           </CardHeader>
           <CardContent className="flex gap-4 flex-wrap">
-            {carteiras.map((carteira) => {
-              const estat = estatisticasPorCarteira.find((e) => e.carteira === carteira)
-              return (
-                <div key={carteira} className="min-w-[220px] flex-1 rounded-lg border p-4">
-                  <div className="font-semibold mb-2">{carteira}</div>
-                  <div className="text-sm">
-                    <div>Total: <span className="font-bold">{estat?.total ?? 0}</span></div>
-                    <div>Presentes: <span className="text-green-600 font-bold">{estat?.presentes ?? 0}</span></div>
-                    <div>Faltas: <span className="text-red-600 font-bold">{estat?.faltas ?? 0}</span></div>
-                    <div>ABS: <span className="font-bold">{estat?.abs ? estat.abs.toFixed(1) + "%" : "0.0%"}</span></div>
-                  </div>
+            {estatisticasPorCarteira.map((estat) => (
+              <div key={estat.carteira} className="min-w-[220px] flex-1 rounded-lg border p-4">
+                <div className="font-semibold mb-2">{estat.carteira}</div>
+                <div className="text-sm">
+                  <div>Total: <span className="font-bold">{estat.total}</span></div>
+                  <div>Presentes: <span className="text-green-600 font-bold">{estat.presentes}</span></div>
+                  <div>Faltas: <span className="text-red-600 font-bold">{estat.faltas}</span></div>
+                  <div>ABS: <span className="font-bold">{estat.abs ? estat.abs.toFixed(1) + "%" : "0.0%"}</span></div>
                 </div>
-              )
-            })}
+              </div>
+            ))}
           </CardContent>
         </Card>
       </section>
@@ -133,7 +130,7 @@ export function CobrancaSection({ selectedTurno }: CobrancaSectionProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCarteiras.map((estat) => (
+                {estatisticasPorCarteira.map((estat) => (
                   <TableRow key={estat.id}>
                     <TableCell>{estat.data}</TableCell>
                     <TableCell>{estat.turno.charAt(0).toUpperCase() + estat.turno.slice(1)}</TableCell>
