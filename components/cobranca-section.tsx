@@ -106,8 +106,8 @@ export function CobrancaSection({ selectedTurno }: CobrancaSectionProps) {
             <form onSubmit={handleAddCarteiraForm}>
               <div className="flex gap-2 items-end">
                 <div className="flex-1">
-                  <Label htmlFor="carteira">Nova Carteira</Label>
-                  <Input id="carteira" name="carteira" placeholder="Ex: NOVA CARTEIRA" required />
+                  <Label htmlFor="nova-carteira">Nova Carteira</Label>
+                  <Input id="nova-carteira" name="carteira" placeholder="Ex: NOVA CARTEIRA" required />
                 </div>
                 <Button type="submit" variant="default">
                   <Plus className="h-4 w-4 mr-1" /> Adicionar
@@ -171,8 +171,8 @@ export function CobrancaSection({ selectedTurno }: CobrancaSectionProps) {
           >
             <div className="space-y-4">
               <div>
-                <Label htmlFor="carteira">Nome da Carteira</Label>
-                <Input id="carteira" name="carteira" defaultValue={editingCarteira} required />
+                <Label htmlFor="editar-carteira">Nome da Carteira</Label>
+                <Input id="editar-carteira" name="carteira" defaultValue={editingCarteira} required />
               </div>
             </div>
             <DialogFooter className="mt-4">
