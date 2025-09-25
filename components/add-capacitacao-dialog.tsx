@@ -23,17 +23,31 @@ interface AddCapacitacaoDialogProps {
   onOpenChange: (open: boolean) => void
   onAdd: (capacitacao: Omit<CapacitacaoRecord, "id">) => void
   assuntosDisponiveis: string[]
+  initialData?: CapacitacaoRecord
 }
 
-export function AddCapacitacaoDialog({ open, onOpenChange, onAdd, assuntosDisponiveis }: AddCapacitacaoDialogProps) {
-  const [formData, setFormData] = useState({
-    quantidade: "",
-    turno: "" as Turno,
-    carteira: "" as Carteira,
-    data: new Date().toISOString().split("T")[0],
-    responsavel: "",
-    status: "" as StatusCapacitacao,
-    assunto: "" as AssuntoCapacitacao,
+export function AddCapacitacaoDialog({ open, onOpenChange, onAdd, assuntosDisponiveis, initialData }: AddCapacitacaoDialogProps) {
+  const [formData, setFormData] = useState(() => {
+    if (typeof initialData !== "undefined") {
+      return {
+        quantidade: initialData.quantidade.toString(),
+        turno: initialData.turno,
+        carteira: initialData.carteira,
+        data: initialData.data.split("T")[0],
+        responsavel: initialData.responsavel,
+        status: initialData.status,
+        assunto: initialData.assunto,
+      }
+    }
+    return {
+      quantidade: "",
+      turno: "" as Turno,
+      carteira: "" as Carteira,
+      data: new Date().toISOString().split("T")[0],
+      responsavel: "",
+      status: "" as StatusCapacitacao,
+      assunto: "" as AssuntoCapacitacao,
+    }
   })
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -67,8 +81,8 @@ export function AddCapacitacaoDialog({ open, onOpenChange, onAdd, assuntosDispon
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Adicionar Capacitação</DialogTitle>
-          <DialogDescription>Registre um novo treinamento ou capacitação</DialogDescription>
+          <DialogTitle>{initialData ? "Editar Capacitação" : "Adicionar Capacitação"}</DialogTitle>
+          <DialogDescription>{initialData ? "Altere os dados do registro de capacitação" : "Registre um novo treinamento ou capacitação"}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -187,7 +201,7 @@ export function AddCapacitacaoDialog({ open, onOpenChange, onAdd, assuntosDispon
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit">Adicionar</Button>
+            <Button type="submit">{initialData ? "Salvar" : "Adicionar"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
